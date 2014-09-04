@@ -96,6 +96,43 @@ class Hubic
         http.finish unless http.nil?
     end
 
+    def delete_object(obj)
+        container, path, uri = normalize_object(obj)
+        meta = {}
+
+
+        hdrs = {}
+        hdrs['X-Auth-Token'] = @os[:token]
+
+	http = Net::HTTP.new(uri.host, uri.port)
+        if uri.scheme == 'https'
+                http.use_ssl = true
+                # http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+        end
+        http.start
+
+        request = Net::HTTP::Delete.new(uri.request_uri, hdrs)
+        http.request(request) {|response|
+            case response
+            when Net::HTTPSuccess
+		meta = parse_response_for_meta(response)
+            when Net::HTTPNotFound
+                meta = nil
+                puts "Not Found"
+            when Net::HTTPRedirection
+                fail "http redirect is not currently handled"
+            when Net::HTTPUnauthorized
+		raise "Need to refresh token"
+            else
+                fail "resource unavailable: #{uri} (#{response.class})"
+            end
+        }
+        meta
+    ensure
+        http.finish unless http.nil?
+    end
+
+
     def get_object(obj, dst=nil, size: nil, offset: 0, &block)
         container, path, uri = normalize_object(obj)
 

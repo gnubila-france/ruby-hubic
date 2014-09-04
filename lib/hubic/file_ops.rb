@@ -76,8 +76,8 @@ class Hubic
         raise "not implemented yet"
     end
 
-    def delete(src)
-        raise "not implemented yet"
+    def delete(path)
+	delete_object(path)
     end
 
     def md5(obj)
@@ -87,7 +87,24 @@ class Hubic
 
 
     def list(path = '/', container = @default_container)
-        objects(container, path: path)
+	results ||= Array.new
+	result = objects(container, path: path)
+	if result.nil?
+		puts "No result available"
+	else
+		result.each do |key, value|
+			if value[:type].eql? "application/directory"
+				string = "[D] #{key} [size:#{value[:size]}, lastmod:#{value[:lastmod]}, type:#{value[:type]}]"
+				puts string
+				results.push(string)
+			else
+				string = "[F] #{key} [size:#{value[:size]}, lastmod:#{value[:lastmod]}, type:#{value[:type]}]"
+				puts string
+				results.push(string)
+			end
+		end
+	end
+	return results
     end
 
 end

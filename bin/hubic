@@ -138,4 +138,27 @@ when 'mkdir_p'
 when 'md5'
     obj = ARGV[0]
     puts Hubic.for_user(user).md5(obj)
+when 'list'
+    path = ARGV[0]
+    container = ARGV[1]
+    Hubic.for_user(user).list(path, container)
+when 'delete'
+    path = ARGV[0]
+    container = ARGV[1]
+    if container.nil?
+	raise "You must provide the container as second argument"
+    end
+    subpath = path.split(/^(.*[\\\/])/)[1]
+    result = Hubic.for_user(user).list(subpath, container)
+    entries = Hash.new
+    result.each { |value|
+       index = value.rindex("[")
+       entries[value[4, index - 5]] = value[0, 3]
+    }
+    if entries[path].eql?("[D]")
+       # If we try to delete a directory that contains file(s), these ones won't be removed.
+       # Thus, delete functionality is not enabled for directories.
+       raise "Cannot remove a Directory."
+    end
+    Hubic.for_user(user).delete(path)
 end
