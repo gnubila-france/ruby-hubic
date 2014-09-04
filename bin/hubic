@@ -101,6 +101,7 @@ if ENV.include?('HUBIC_REDIRECT_URI' ) &&
     Hubic.default_client_secret = ENV['HUBIC_CLIENT_SECRET']
 else
     begin
+        puts "Loading HUBIC_CLIENT_CFG file"
         cfg = YAML.load_file(HUBIC_CLIENT_CFG)
         Hubic.default_redirect_uri  = cfg['redirect_uri' ] 
         Hubic.default_client_id     = cfg['client_id'    ] 
